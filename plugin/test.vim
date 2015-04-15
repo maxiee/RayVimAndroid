@@ -1,4 +1,4 @@
-function! maxiee()
+function! Maxiee()
 
     python << EOF
 
