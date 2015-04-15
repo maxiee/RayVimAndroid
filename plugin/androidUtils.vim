@@ -30,3 +30,21 @@ else:
 os.chdir(old_dir)
 EOF
 endfunction
+
+function! OpenBuffer(content)
+python << EOF
+
+import vim
+BUFFER_NAME = '__RayVimAndroid__'
+existing_buffer_window_id = \
+    vim.eval('bufwinnr("%s")' % BUFFER_NAME)
+if existing_buffer_window_id == '-1':
+    vim.command('vsplit %s' % BUFFER_NAME)
+    vim.command('setlocal buftype=nofile nospell')
+    vim.current.window.width = 20
+else:
+    vim.command('%swincmd w' % existing_buffer_window_id)
+del vim.current.buffer[:]
+vim.current.buffer.append(vim.eval("a:content"))
+EOF
+endfunction
