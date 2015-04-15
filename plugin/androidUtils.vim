@@ -22,7 +22,7 @@ while(path_found == find_manifest(pwd) is ""):
 if path_found is not '':
     vim.current.buffer.append(path_found)
 else:
-    vim.current.buffer.append("Not found!)
+    vim.current.buffer.append("Not found!")
 os.chdir(old_dir)
 EOF
 endfunction
