@@ -14,7 +14,7 @@ def find_manifest(path):
     return ""
 
 path_found = ''    
-while(path_found = find_manifest(pwd) is ""):
+while(path_found == find_manifest(pwd) is ""):
     if pwd == '/':
         break
     pwd = os.chdir(pwd+'/..')
