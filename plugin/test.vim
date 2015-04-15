@@ -1,9 +1,9 @@
 function! Maxiee()
 
-    python << EOF
+python << EOF
 
-    import vim
+import vim
 
-    vim.current.buffer.append("Hello, Maxiee!")
+vim.current.buffer.append("Hello, Maxiee!")
 EOF
 endfunction
