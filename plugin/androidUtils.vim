@@ -33,13 +33,15 @@ python << EOF
 import vim
 settings = open(vim.eval('a:path') + '/' + 'settings.gradle')
 data = settings.read().split(" ")
-modules = [module.replace("'","").replace(":","").replace(",","") 
+modules = [module.replace("'","").replace(":","",1).replace(",","").replace("\n","") 
     for module in data][1:] 
-vim.command('echom "%s"' % ' '.join(modules))
+#vim.command('echom "%s"' % ' '.join(modules))
+vim.command('let l:result = "%s"' % ' '.join(modules))
 EOF
+return l:result
 endfunction
 
-function! OpenBuffer(content)
+function! OpenBuffer()
 python << EOF
 
 import vim
@@ -49,11 +51,10 @@ existing_buffer_window_id = \
 if existing_buffer_window_id == '-1':
     vim.command('vsplit %s' % BUFFER_NAME)
     vim.command('setlocal buftype=nofile nospell')
-    vim.current.window.width = 20
+    vim.current.window.width = 30
 else:
     vim.command('%swincmd w' % existing_buffer_window_id)
 del vim.current.buffer[:]
-vim.current.buffer.append(vim.eval("a:content"))
 EOF
 endfunction
 
@@ -63,14 +64,27 @@ if l:settings == ""
    echom "Android Project not found!"
    return 
 endif
-let l:content = "{}"
+let l:data = "{}"
+let l:modules = ParseSettings(l:settings)
+echom l:modules
 python << EOF
 import vim
 import json
-content = json.loads(vim.eval("l:content"))
+data = json.loads(vim.eval("l:data"))
 res = vim.eval("l:settings")
-content['project_name'] = res.split('/')[-1]
-vim.command('let l:content = "%s"' % str(content))
-vim.command('call OpenBuffer(l:content)')
+data['project_name'] = res.split('/')[-1]
+module_list = []
+for module in vim.eval("l:modules").split(' '):
+    dict = {}
+    dict['module_name'] = module    
+    module_list.append(dict)
+data['modules'] = module_list
+# format project information
+vim.command('call OpenBuffer()')
+vim.current.buffer.append(data['project_name'])
+vim.current.buffer.append("Modules:")
+for module in data['modules']:
+    vim.current.buffer.append(module['module_name'])
+vim.command('let l:content = \'%s\'' % json.dumps(data))
 EOF
 endfunction
