@@ -1,5 +1,4 @@
 function! FindFile(name)
-let l:result = ""
 python << EOF
 
 import vim
@@ -13,7 +12,7 @@ def find_file(name):
     while(path_found is '' and pwd is not '/'):
         dirs = os.listdir(pwd)
         for d in dirs:
-            vim.current.buffer.append('\t' + d)
+            #vim.current.buffer.append('\t' + d)
             if d == name:
                 path_found = pwd
         os.chdir(pwd+'/..')
@@ -24,7 +23,7 @@ res = find_file(
     vim.eval("a:name")
 )
 os.chdir(old_dir)
-vim.command("set l:result=%s" % res)
+vim.command('let l:result="%s"' % res)
 EOF
 return l:result
 endfunction
@@ -44,5 +43,22 @@ else:
     vim.command('%swincmd w' % existing_buffer_window_id)
 del vim.current.buffer[:]
 vim.current.buffer.append(vim.eval("a:content"))
+EOF
+endfunction
+
+function! AndroidProject()
+let l:settings = FindFile("settings.gradle")
+if l:settings == ""
+   echom "Android Project not found!"
+   return 
+endif
+python << EOF
+import os
+import vim
+content = ''
+res = vim.eval("l:settings")
+PROJECT_NAME = res.split('/')[-1]
+content += PROJECT_NAME + '\n'
+vim.command('call OpenBuffer("%s")' % content)
 EOF
 endfunction
