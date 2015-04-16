@@ -156,8 +156,13 @@ def parse_manifest(path):
 def info_open_close(info, row):
     pre = " |"
     content = []
-    for key in info.keys():
-        content.append(pre + "%s:%s" % (key, info[key]))
+    content.append(pre + "%s:%s" % ("id", info['id']))
+    content.append(pre + "%s:%s|%s:%s" % 
+        ('cSdkV', info['compileSdkVersion'], 'bSdkV', info['buildToolsVersion']))
+    content.append(pre + "%s:%s|%s:%s" %
+        ('mSdkV', info['minSdkVersion'], 'tSdkV', info['targetSdkVersion'])) 
+    content.append(pre + "%s:%s|%s:%s" %
+        ('vc', info['versionCode'], 'vn', info['versionName']))
     vim.command("normal! o" +  "\n".join(content))
 if path_valid:
     build_info = parse_build(path)
