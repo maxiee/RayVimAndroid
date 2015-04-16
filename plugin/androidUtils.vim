@@ -57,6 +57,7 @@ else:
     vim.command('%swincmd w' % existing_buffer_window_id)
 del vim.current.buffer[:]
 EOF
+noremap <buffer> o :call <SID>LineSelected()<cr>
 endfunction
 
 function! AndroidProject()
@@ -101,5 +102,17 @@ for module in data['modules']:
         line += " (" + vim.eval("l:settings") + "/" + module['module_name'] + ")"
     vim.current.buffer.append(line)
 vim.command('let l:content = \'%s\'' % json.dumps(data))
+EOF
+endfunction
+
+function! s:LineSelected()
+python << EOF
+import vim
+line = vim.current.line
+if "[M]" in line or "[L]" in line:
+    path = line[line.find('(')+1:line.find(')')]
+else:
+    path = "Not valid."
+print path
 EOF
 endfunction
