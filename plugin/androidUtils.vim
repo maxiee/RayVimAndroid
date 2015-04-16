@@ -109,10 +109,52 @@ function! s:LineSelected()
 python << EOF
 import vim
 line = vim.current.line
+path_valid = True
 if "[M]" in line or "[L]" in line:
     path = line[line.find('(')+1:line.find(')')]
 else:
     path = "Not valid."
-print path
+    print path
+keys = [
+    "compileSdkVersion",
+    "buildToolsVersion",
+    "minSdkVersion",
+    "targetSdkVersion",
+    "versionCode",
+    "versionName"
+]
+
+def parse_build(path):
+    import re
+    build_gradle = open(path + '/build.gradle').read()
+    search_pattern = [
+        r'compileSdkVersion (.*)\n',
+        r'buildToolsVersion [",\'](.*)[",\']\n',
+        r'minSdkVersion (.*)\n',
+        r'targetSdkVersion (.*)\n',
+        r'versionCode (.*)\n',
+        r'versionName (.*)\n'
+    ]
+    
+    build_info = {}
+    for i in range(len(search_pattern)):
+        match = re.search(search_pattern[i], build_gradle, re.M)
+        if match is None:
+            match = "None"
+        else:
+            match = match.group(1)
+        build_info[keys[i]] = match
+    return build_info
+
+def info_open_close(info, row):
+    pre = " |"
+    content = []
+    for key in info.keys():
+        content.append("%s:%s" % (key, info[key]))
+    vim.command("normal! o" +  "\n".join(content))
+if path_valid:
+    build_info = parse_build(path)
+    row = vim.current.window.cursor[0]
+    info_open_close(build_info, row)
 EOF
 endfunction
