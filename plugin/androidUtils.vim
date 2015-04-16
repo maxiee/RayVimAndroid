@@ -93,7 +93,7 @@ vim.command('call OpenBuffer()')
 vim.current.buffer.append(data['project_name'])
 vim.current.buffer.append("Modules:")
 for module in data['modules']:
-    line = ""
+    line = "+"
     if module['is_lib']:
         line += "[L]"
         line += module['module_name']
@@ -110,14 +110,6 @@ endfunction
 function! s:LineSelected()
 python << EOF
 import vim
-line = vim.current.line
-path_valid = True
-if "[M]" in line or "[L]" in line:
-    path = line[line.find('(')+1:line.find(')')]
-else:
-    path = "Not valid."
-    print path
-
 def parse_build(path):
     import re
     build_gradle = open(path + '/build.gradle').read()
@@ -153,20 +145,39 @@ def parse_build(path):
     
 def parse_manifest(path):
     pass
-def info_open_close(info, row):
+    
+def info_open(info, row):
     pre = " |"
-    content = []
-    content.append(pre + "%s:%s" % ("id", info['id']))
-    content.append(pre + "%s:%s|%s:%s" % 
-        ('cSdkV', info['compileSdkVersion'], 'bSdkV', info['buildToolsVersion']))
-    content.append(pre + "%s:%s|%s:%s" %
-        ('mSdkV', info['minSdkVersion'], 'tSdkV', info['targetSdkVersion'])) 
-    content.append(pre + "%s:%s|%s:%s" %
-        ('vc', info['versionCode'], 'vn', info['versionName']))
-    vim.command("normal! o" +  "\n".join(content))
+    # open
+    content = [
+        pre + "%s:%s" % ("id", info['id']), 
+        pre + "%s:%s|%s:%s" % 
+            ('cSdkV', info['compileSdkVersion'], 'bSdkV', info['buildToolsVersion']),
+        pre + "%s:%s|%s:%s" %
+            ('mSdkV', info['minSdkVersion'], 'tSdkV', info['targetSdkVersion']),
+        pre + "%s:%s|%s:%s" %
+            ('vc', info['versionCode'], 'vn', info['versionName'])
+    ]
+    for i in range(4):
+        vim.command("normal! o%s" %  content[i])
+        vim.command("normal! %sG0xi-" % str(row))
+
+line = vim.current.line
+path_valid = False
+if "[M]" in line or "[L]" in line:
+    path = line[line.find('(')+1:line.find(')')]
+    path_valid = True
+else:
+    path = "Not valid."
+    print path
+
 if path_valid:
-    build_info = parse_build(path)
-    row = vim.current.window.cursor[0]
-    info_open_close(build_info, row)
+    if '+' in line:
+        row = vim.current.window.cursor[0]
+        build_info = parse_build(path)
+        info_open(build_info, row)
+    if '-' in line:
+        vim.command('execute "g/ |/d"')
+        vim.command("normal! %sG0xi+" % str(row))
 EOF
 endfunction
