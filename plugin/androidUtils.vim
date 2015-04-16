@@ -52,13 +52,14 @@ if l:settings == ""
    echom "Android Project not found!"
    return 
 endif
+let l:content = "{}"
 python << EOF
-import os
 import vim
-content = ''
+import json
+content = json.loads(vim.eval("l:content"))
 res = vim.eval("l:settings")
-PROJECT_NAME = res.split('/')[-1]
-content += PROJECT_NAME + '\n'
-vim.command('call OpenBuffer("%s")' % content)
+content['project_name'] = res.split('/')[-1]
+vim.command('let l:content = "%s"' % str(content))
+vim.command('call OpenBuffer(l:content)')
 EOF
 endfunction
