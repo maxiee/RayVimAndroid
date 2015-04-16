@@ -51,6 +51,7 @@ existing_buffer_window_id = \
 if existing_buffer_window_id == '-1':
     vim.command('vsplit %s' % BUFFER_NAME)
     vim.command('setlocal buftype=nofile nospell')
+    vim.command('setlocal nowrap')
     vim.current.window.width = 30
 else:
     vim.command('%swincmd w' % existing_buffer_window_id)
@@ -76,7 +77,12 @@ data['project_name'] = res.split('/')[-1]
 module_list = []
 for module in vim.eval("l:modules").split(' '):
     dict = {}
-    dict['module_name'] = module    
+    if "libraries" in module:
+        dict['is_lib'] = 1
+        dict['module_name'] = module.split(':')[-1]    
+    else:
+        dict['is_lib'] = 0
+        dict['module_name'] = module    
     module_list.append(dict)
 data['modules'] = module_list
 # format project information
@@ -84,7 +90,16 @@ vim.command('call OpenBuffer()')
 vim.current.buffer.append(data['project_name'])
 vim.current.buffer.append("Modules:")
 for module in data['modules']:
-    vim.current.buffer.append(module['module_name'])
+    line = ""
+    if module['is_lib']:
+        line += "[L]"
+        line += module['module_name']
+        line += " (" + vim.eval("l:settings") +  "/libraries/" + module['module_name'] + ")"
+    else:
+        line += "[M]"
+        line += module['module_name']
+        line += " (" + vim.eval("l:settings") + "/" + module['module_name'] + ")"
+    vim.current.buffer.append(line)
 vim.command('let l:content = \'%s\'' % json.dumps(data))
 EOF
 endfunction
