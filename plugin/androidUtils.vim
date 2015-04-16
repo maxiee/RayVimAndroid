@@ -28,6 +28,17 @@ EOF
 return l:result
 endfunction
 
+function! ParseSettings(path)
+python << EOF
+import vim
+settings = open(vim.eval('a:path') + '/' + 'settings.gradle')
+data = settings.read().split(" ")
+modules = [module.replace("'","").replace(":","").replace(",","") 
+    for module in data][1:] 
+vim.command('echom "%s"' % ' '.join(modules))
+EOF
+endfunction
+
 function! OpenBuffer(content)
 python << EOF
 
