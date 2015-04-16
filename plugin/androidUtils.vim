@@ -160,7 +160,8 @@ def info_open(info, row):
     ]
     for i in range(4):
         vim.command("normal! o%s" %  content[i])
-        vim.command("normal! %sG0xi-" % str(row))
+    vim.current.window.cursor = (row,0)
+    vim.command("normal! xi-")
 
 line = vim.current.line
 path_valid = False
@@ -172,12 +173,13 @@ else:
     print path
 
 if path_valid:
+    row = vim.current.window.cursor[0]
     if '+' in line:
-        row = vim.current.window.cursor[0]
         build_info = parse_build(path)
         info_open(build_info, row)
-    if '-' in line:
+    elif '-' in line:
         vim.command('execute "g/ |/d"')
+        vim.current.window.cursor = (row,0)
         vim.command("normal! %sG0xi+" % str(row))
 EOF
 endfunction
