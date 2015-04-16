@@ -51,12 +51,14 @@ existing_buffer_window_id = \
 if existing_buffer_window_id == '-1':
     vim.command('vsplit %s' % BUFFER_NAME)
     vim.command('setlocal buftype=nofile nospell')
+    vim.command('setlocal noautoindent nocindent nosmartindent')
     vim.command('setlocal nowrap')
     vim.current.window.width = 30
 else:
     vim.command('%swincmd w' % existing_buffer_window_id)
 del vim.current.buffer[:]
 EOF
+let b:did_indent = 1
 noremap <buffer> o :call <SID>LineSelected()<cr>
 endfunction
 
@@ -115,19 +117,12 @@ if "[M]" in line or "[L]" in line:
 else:
     path = "Not valid."
     print path
-keys = [
-    "compileSdkVersion",
-    "buildToolsVersion",
-    "minSdkVersion",
-    "targetSdkVersion",
-    "versionCode",
-    "versionName"
-]
 
 def parse_build(path):
     import re
     build_gradle = open(path + '/build.gradle').read()
     search_pattern = [
+        r'applicationId "(.*)"',
         r'compileSdkVersion (.*)\n',
         r'buildToolsVersion [",\'](.*)[",\']\n',
         r'minSdkVersion (.*)\n',
@@ -136,6 +131,16 @@ def parse_build(path):
         r'versionName (.*)\n'
     ]
     
+    keys = [
+        "id",
+        "compileSdkVersion",
+        "buildToolsVersion",
+        "minSdkVersion",
+        "targetSdkVersion",
+        "versionCode",
+        "versionName"
+    ]
+
     build_info = {}
     for i in range(len(search_pattern)):
         match = re.search(search_pattern[i], build_gradle, re.M)
@@ -145,12 +150,14 @@ def parse_build(path):
             match = match.group(1)
         build_info[keys[i]] = match
     return build_info
-
+    
+def parse_manifest(path):
+    pass
 def info_open_close(info, row):
     pre = " |"
     content = []
     for key in info.keys():
-        content.append("%s:%s" % (key, info[key]))
+        content.append(pre + "%s:%s" % (key, info[key]))
     vim.command("normal! o" +  "\n".join(content))
 if path_valid:
     build_info = parse_build(path)
