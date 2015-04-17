@@ -144,9 +144,21 @@ def parse_build(path):
     return build_info
     
 def parse_manifest(path):
-    pass
+    import xml.etree.ElementTree as ET
+    xmlns = '{http://schemas.android.com/apk/res/android}'
+    android_manifest = ET.parse(path + '/src/main/AndroidManifest.xml')
+    application = android_manifest.find('application')
+    activity_info = []
+    for child in application:
+        if child.tag in ['activity', 'activity-alias']:
+            activity = {}
+            for key in child.attrib.keys():
+                activity[key.replace(xmlns, "")] = child.attrib[key]
+            activity_info.append(activity)
+    return activity_info
+            
     
-def info_open(info, row):
+def info_open(info, and_info, row):
     pre = " |"
     # open
     content = [
@@ -160,6 +172,10 @@ def info_open(info, row):
     ]
     for i in range(4):
         vim.command("normal! o%s" %  content[i])
+    for item in and_info:
+        #for key in item.keys():
+        #    vim.command("normal! o%s" % pre + key+':'+str(item[key]))
+        vim.command("normal! o%s" % pre + item['name'].split(".")[-1])
     vim.current.window.cursor = (row,0)
     vim.command("normal! xi-")
 
@@ -176,7 +192,8 @@ if path_valid:
     row = vim.current.window.cursor[0]
     if '+' in line:
         build_info = parse_build(path)
-        info_open(build_info, row)
+        and_info = parse_manifest(path)
+        info_open(build_info, and_info, row)
     elif '-' in line:
         vim.command('execute "g/ |/d"')
         vim.current.window.cursor = (row,0)
